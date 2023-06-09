@@ -2,6 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: my-namespace
   labels:
     app: myservice
   name: myservice
@@ -12,7 +13,7 @@ spec:
     protocol: TCP
     targetPort: 80
   selector:
-    app: bakehouse
+    app: {{ .Release.Name }}
   type: NodePort
 status:
   loadBalancer: {}
