@@ -24,7 +24,7 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'slave_kubeconfig', variable: 'KUBECONFIG_ITI')]) {
                         // Check if the release is already deployed
-                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseApp")
+                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseApp --kubeconfig ${KUBECONFIG_ITI}")
                         // Install or upgrade the custom chart using Helm based on the release status
                         if (releaseStatus == 0) {
                             sh """
