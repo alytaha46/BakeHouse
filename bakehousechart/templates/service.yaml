@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: my-namespace
+  namespace: devops-tools
   labels:
     app: myservice
   name: myservice
