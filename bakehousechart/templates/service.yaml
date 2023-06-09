@@ -4,8 +4,8 @@ kind: Service
 metadata:
   namespace: devops-tools
   labels:
-    app: myservice
-  name: myservice
+    app: {{ .Release.Name }}-service
+  name: {{ .Release.Name }}-service
 spec:
   ports:
   - name: bakehouseport
