@@ -24,15 +24,15 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'slave_kubeconfig', variable: 'KUBECONFIG_ITI')]) {
                         // Check if the release is already deployed
-                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseApp --kubeconfig ${KUBECONFIG_ITI}")
+                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseapp --kubeconfig ${KUBECONFIG_ITI}")
                         // Install or upgrade the custom chart using Helm based on the release status
                         if (releaseStatus == 0) {
                             sh """
-                                helm upgrade bakehouseApp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
+                                helm upgrade bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
                             """
                         } else {
                             sh """
-                                helm install bakehouseApp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
+                                helm install bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
                             """
                         }
                     }
