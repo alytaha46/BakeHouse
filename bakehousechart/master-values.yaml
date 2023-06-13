@@ -7,7 +7,7 @@ replicaCount: 1
 
 image:
   repository: alytaha46
-  name: bakehouseitismarthelm
+  name: bakehouseproject
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "v1"
