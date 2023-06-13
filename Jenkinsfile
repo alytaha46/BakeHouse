@@ -24,11 +24,11 @@ pipeline {
                     // Install or upgrade the custom chart using Helm based on the release status
                     if (releaseStatus == 0) {
                         sh """
-                            helm upgrade bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml --namespace bakehouse-ns
+                            helm upgrade bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
                         """
                     } else {
                         sh """
-                            helm install bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml --namespace bakehouse-ns
+                            helm install bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
                         """
                     }
             }
