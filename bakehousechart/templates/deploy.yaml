@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: devops-tools
+  namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Release.Name }}
   name: {{ .Release.Name }}

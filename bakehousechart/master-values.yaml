@@ -4,7 +4,7 @@
 
 replicaCount: 1
 
-
+namespace: bakehouse-name-space
 image:
   repository: alytaha46
   name: bakehouseproject
