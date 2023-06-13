@@ -19,19 +19,26 @@ pipeline {
             steps {
                 echo 'deploy'
                 script {
-                    // Check if the release is already deployed
-                    def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseapp")
-                    // Install or upgrade the custom chart using Helm based on the release status
-                    if (releaseStatus == 0) {
+                    withCredentials([file(credentialsId: 'slave_kubeconfig', variable: 'KUBECONFIG_ITI'),
+                                    file(credentialsId: 'other_credential', variable: 'key.json')]) 
+                    {
                         sh """
-                            helm upgrade bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
+                            gcloud auth activate-service-account --key-file ${key.json}
                         """
-                    } else {
-                        sh """
-                            helm install bakehouseapp ./bakehousechart/ --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
-                        """
+                        // Check if the release is already deployed
+                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseapp --kubeconfig ${KUBECONFIG_ITI}")
+                        // Install or upgrade the custom chart using Helm based on the release status
+                        if (releaseStatus == 0) {
+                            sh """
+                                helm upgrade bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
+                            """
+                        } else {
+                            sh """
+                                helm install bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
+                            """
+                        }
                     }
-            }
+                }
             }
         }
     }
