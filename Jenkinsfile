@@ -20,7 +20,7 @@ pipeline {
                 echo 'deploy'
                 script {
                     withCredentials([file(credentialsId: 'slave_kubeconfig', variable: 'KUBECONFIG_ITI'),
-                                    file(credentialsId: 'other_credential', variable: 'key.json')]) 
+                                    file(credentialsId: 'service_account_key', variable: 'key.json')]) 
                     {
                         sh """
                             gcloud auth activate-service-account --key-file ${key.json}
