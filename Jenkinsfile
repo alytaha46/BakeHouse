@@ -20,10 +20,10 @@ pipeline {
                 echo 'deploy'
                 script {
                     withCredentials([file(credentialsId: 'slave_kubeconfig', variable: 'KUBECONFIG_ITI'),
-                                    file(credentialsId: 'service_account_key', variable: 'key.json')]) 
+                                    file(credentialsId: 'service_account_key', variable: 'KEYY')]) 
                     {
                         sh """
-                            gcloud auth activate-service-account --key-file ${key.json}
+                            gcloud auth activate-service-account --key-file ${KEYY}
                         """
                         // Check if the release is already deployed
                         def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseapp --kubeconfig ${KUBECONFIG_ITI}")
