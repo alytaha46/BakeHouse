@@ -24,19 +24,8 @@ pipeline {
                     {
                         sh """
                             gcloud auth activate-service-account --key-file ${KEYY}
+                            helm upgrade --install bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
                         """
-                        // Check if the release is already deployed
-                        def releaseStatus = sh(returnStatus: true, script: "helm status bakehouseapp --kubeconfig ${KUBECONFIG_ITI}")
-                        // Install or upgrade the custom chart using Helm based on the release status
-                        if (releaseStatus == 0) {
-                            sh """
-                                helm upgrade bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
-                            """
-                        } else {
-                            sh """
-                                helm install bakehouseapp ./bakehousechart/ --kubeconfig ${KUBECONFIG_ITI} --set image.tag=v${BUILD_NUMBER} --values bakehousechart/master-values.yaml
-                            """
-                        }
                     }
                 }
             }
