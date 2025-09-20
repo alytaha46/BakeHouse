@@ -36,9 +36,6 @@ cluster_addons = {
   coredns                = {
       most_recent = true
   }
-  aws-load-balancer-controller = {
-      most_recent = true
-  }
 }
 
 eks_managed_node_groups = {
