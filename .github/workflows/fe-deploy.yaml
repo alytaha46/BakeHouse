@@ -1,0 +1,52 @@
+name: bakehouse-frontend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - dev
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: bakehouse-frontend
+  REPO_NAME: alytaha46
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker registry
+        run: echo ${{ secrets.DOCKER_PAT }} | docker login ${{ env.REGISTRY }} -u alytaha46 --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.ref_name}}-${{ github.sha }} .
+        
+      - name: Push Docker image
+        run: docker push ${{ env.REGISTRY }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.ref_name}}-${{ github.sha }}
+
+  Deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up kubectl
+        run: |
+          aws eks update-kubeconfig --name k8s-task-cluster --region eu-west-1
+      
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ali-taha-imrsiv
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+          helm dependency update deploy/helm/.
+          helm upgrade --install --create-namespace -n bakehouse-${{ github.ref_name }} bakehouse-frontend deploy/helm/. -f deploy/helm/config/${{ github.ref_name }}.yaml --set image.tag=${{ github.ref_name }}-${{ github.sha }}

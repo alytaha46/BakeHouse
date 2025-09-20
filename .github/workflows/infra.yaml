@@ -1,0 +1,84 @@
+name: Task Infrastructure
+run-name: ${{ github.event.inputs.action }} Task Infrastructure ${{ github.event.inputs.module != '' && github.event.inputs.module || null }} by ${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Choose an action: plan, apply, destroy'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      module:
+        description: 'Specify the module to operate on (optional)'
+        required: false
+        type: string
+      backend_config_file:
+        description: 'Specify the backend config file (optional)'
+        required: false
+        type: string
+
+jobs:
+  tofu-job:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: infra
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+
+      - name: OpenTofu - Setup Tofu
+        uses: opentofu/setup-opentofu@v1.0.4
+
+      - name: Run tofu init (with backend config)
+        if: github.event.inputs.backend_config_file != ''
+        run: |
+          tofu init -backend-config=${{ github.event.inputs.backend_config_file }} -reconfigure
+
+      - name: Run tofu init (default)
+        if: github.event.inputs.backend_config_file == ''
+        run: |
+          tofu init -reconfigure
+        
+      - name: Run tofu plan (with module)
+        if: ${{ github.event.inputs.action == 'plan' && github.event.inputs.module != '' }}
+        run: |
+          tofu plan -var-file ./config/sandbox.tfvars -target=${{ github.event.inputs.module }}
+
+      - name: Run tofu plan (all)
+        if: ${{ github.event.inputs.action == 'plan' && github.event.inputs.module == '' }}
+        run: |
+          tofu plan -var-file ./config/sandbox.tfvars 
+
+      - name: Run tofu apply (with module)
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.module != '' }}
+        run: |
+          tofu apply -var-file ./config/sandbox.tfvars --auto-approve -target=${{ github.event.inputs.module }}
+
+      - name: Run tofu apply (all)
+        if: ${{ github.event.inputs.action == 'apply' && github.event.inputs.module == '' }}
+        run: |
+          tofu apply -var-file ./config/sandbox.tfvars --auto-approve
+
+      - name: Run tofu destroy (with module)
+        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.module != '' }}
+        run: |
+          tofu destroy -var-file ./config/sandbox.tfvars --auto-approve -target=${{ github.event.inputs.module }}
+
+      - name: Run tofu destroy (all)
+        if: ${{ github.event.inputs.action == 'destroy' && github.event.inputs.module == '' }}
+        run: |
+          tofu destroy -var-file ./config/sandbox.tfvars --auto-approve
