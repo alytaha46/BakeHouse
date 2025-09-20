@@ -55,6 +55,16 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
+          helm repo add eks https://aws.github.io/eks-charts
+          helm repo update
+
+          # Install/upgrade the ALB controller
+          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+            -n kube-system \
+            --set clusterName=k8s-task-cluster \
+            --set serviceAccount.create=true \
+            --set region=eu-west-1 \
+            --set vpcId=$(aws eks describe-cluster --name k8s-task-cluster --region eu-west-1 --query "cluster.resourcesVpcConfig.vpcId" --output text)
           curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
           helm dependency update deploy/helm/.
           helm upgrade --install --create-namespace -n bakehouse-${{ github.ref_name }} bakehouse-frontend deploy/helm/. -f deploy/helm/config/${{ github.ref_name }}.yaml --set image.tag=${{ github.ref_name }}-${{ github.sha }}
